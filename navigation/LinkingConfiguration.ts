@@ -9,11 +9,6 @@ const linking: LinkingOptions<RootStackParamList> = {
     screens: {
       Root: {
         screens: {
-          TabOne: {
-            screens: {
-              TabOneScreen: 'one',
-            },
-          },
           Wallet: {
             screens: {
               WalletScreen: 'wallet',

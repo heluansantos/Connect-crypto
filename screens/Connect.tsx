@@ -3,7 +3,7 @@ import "react-native-url-polyfill/auto";
 import { Buffer } from "buffer";
 global.Buffer = global.Buffer || Buffer;
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Button, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Button, Platform, ScrollView, Text, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import * as Linking from "expo-linking";
 import nacl from "tweetnacl";
@@ -14,7 +14,7 @@ import {
   PublicKey,
   Transaction,
 } from "@solana/web3.js";
-import { RootTabScreenProps } from '../types';
+import { useWallet } from '../providers/wallet/WalletProvider';
 
 const NETWORK = clusterApiUrl("mainnet-beta");
 
@@ -39,13 +39,10 @@ export default function Connect() {
   const connection = new Connection(NETWORK);
   const addLog = useCallback((log: string) => setLogs((logs) => [...logs, "> " + log]), []);
   const scrollViewRef = useRef<any>(null);
-
-  // store dappKeyPair, sharedSecret, session and account SECURELY on device
-  // to avoid having to reconnect users.
   const [dappKeyPair] = useState(nacl.box.keyPair());
   const [sharedSecret, setSharedSecret] = useState<Uint8Array>();
-  const [session, setSession] = useState<string>();
   const [phantomWalletPublicKey, setPhantomWalletPublicKey] = useState<PublicKey>();
+  const {setSession} = useWallet()
 
   useEffect(() => {
     (async () => {
@@ -87,7 +84,7 @@ export default function Connect() {
         params.get("nonce")!,
         sharedSecretDapp
       );
-
+      console.log(connectData.session, '<<<<<<< Connect')
       setSharedSecret(sharedSecretDapp);
       setSession(connectData.session);
       setPhantomWalletPublicKey(new PublicKey(connectData.public_key));

@@ -1,10 +1,12 @@
-import { Button, Platform, ScrollView } from 'react-native';
+import { Button } from 'react-native';
 import bs58 from "bs58";
 import nacl from "tweetnacl";
 import * as Linking from "expo-linking";
 import { StatusBar } from "expo-status-bar";
-import { Text, View } from '../components/Themed';
-import { useRef, useState } from 'react';
+import { View } from '../components/Themed';
+import { useState } from 'react';
+import { useWallet } from '../providers/wallet/WalletProvider';
+import { RootTabScreenProps } from '../types';
 
 const onDisconnectRedirectLink = Linking.createURL("onDisconnect");
 const buildUrl = (path: string, params: URLSearchParams) =>
@@ -24,12 +26,10 @@ const encryptPayload = (payload: any, sharedSecret?: Uint8Array) => {
   return [nonce, encryptedPayload];
 };
 
-export default function HomeScreen() {
+export default function HomeScreen({ navigation }: RootTabScreenProps<'Home'>) {
+  const {session, setSession} = useWallet()
   const [dappKeyPair] = useState(nacl.box.keyPair());
   const [sharedSecret, setSharedSecret] = useState<Uint8Array>();
-  const [session, setSession] = useState<string>();
-  const scrollViewRef = useRef<any>(null);
-  const [logs, setLogs] = useState<string[]>([]);
 
 
   const disconnect = async () => {
@@ -44,43 +44,16 @@ export default function HomeScreen() {
       redirect_link: onDisconnectRedirectLink,
       payload: bs58.encode(encryptedPayload),
     });
-
+    
+    setSession(undefined)
+    navigation.replace('Connect')
     const url = buildUrl("disconnect", params);
     Linking.openURL(url);
   };
 
-
   return (
     <View style={{ flex: 1, backgroundColor: "#333" }}>
       <StatusBar style="light" />
-      <View style={{ flex: 1 }}>
-        <ScrollView
-          contentContainerStyle={{
-            backgroundColor: "#111",
-            padding: 20,
-            paddingTop: 100,
-            flexGrow: 1,
-          }}
-          ref={scrollViewRef}
-          onContentSizeChange={() => {
-            scrollViewRef.current.scrollToEnd({ animated: true });
-          }}
-          style={{ flex: 1 }}
-        >
-          {logs.map((log, i) => (
-            <Text
-              key={`t-${i}`}
-              style={{
-                fontFamily: Platform.OS === "ios" ? "Courier New" : "monospace",
-                color: "#fff",
-                fontSize: 14,
-              }}
-            >
-              {log}
-            </Text>
-          ))}
-        </ScrollView>
-      </View>
       <View style={{ flex: 0, paddingTop: 20, paddingBottom: 40 }}>
         <Btn title="Disconnect" onPress={disconnect} />
       </View>
