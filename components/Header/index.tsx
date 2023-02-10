@@ -2,11 +2,13 @@ import { View } from "../Themed";
 import { Container, Image, Name, SubTitle, Title, ViewRow } from "./styles";
 import IconLogo from "../../assets/icons/IconLogo.svg";
 import { useState } from "react";
+import { usePhantom } from '../../providers/wallet/PhantomContext';
 
 const Header = () => {
+  const {wallet} = usePhantom()
   const [user] = useState({
-    image: "https://reactnative.dev/img/tiny_logo.png",
-    name: "Heluan",
+    image: wallet?.icon,
+    name: wallet?.name,
   });
   return (
     <Container>

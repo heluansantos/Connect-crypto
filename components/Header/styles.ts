@@ -22,15 +22,15 @@ export const Title = styled.Text`
 `;
 
 export const Name = styled.Text`
-  font-size: 8px;
-  line-height: 11px;
-  color: #838383;
-`;
-
-export const SubTitle = styled.Text`
   font-size: 12px;
   line-height: 16px;
   color: #d3d3d3;
+`;
+
+export const SubTitle = styled.Text`
+  font-size: 8px;
+  line-height: 11px;
+  color: #838383;
 `;
 
 export const Image = styled.Image`
