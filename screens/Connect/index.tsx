@@ -14,7 +14,9 @@ import {
   PublicKey,
   Transaction,
 } from "@solana/web3.js";
-import { useWallet } from '../providers/wallet/WalletProvider';
+import { useWallet } from '../../providers/wallet/WalletProvider';
+import { Container } from './styles';
+
 
 const NETWORK = clusterApiUrl("mainnet-beta");
 
@@ -84,7 +86,7 @@ export default function Connect() {
         params.get("nonce")!,
         sharedSecretDapp
       );
-      console.log(connectData.session, '<<<<<<< Connect')
+
       setSharedSecret(sharedSecretDapp);
       setSession(connectData.session);
       setPhantomWalletPublicKey(new PublicKey(connectData.public_key));
@@ -146,7 +148,7 @@ export default function Connect() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#333" }}>
+    <Container>
       <StatusBar style="light" />
       <View style={{ flex: 1 }}>
         <ScrollView
@@ -179,7 +181,7 @@ export default function Connect() {
       <View style={{ flex: 0, paddingTop: 20, paddingBottom: 40 }}>
         <Btn title="Connect" onPress={connect} />
       </View>
-    </View>
+    </Container>
   );
 }
 

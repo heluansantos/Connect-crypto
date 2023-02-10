@@ -3,10 +3,12 @@ import bs58 from "bs58";
 import nacl from "tweetnacl";
 import * as Linking from "expo-linking";
 import { StatusBar } from "expo-status-bar";
-import { View } from '../components/Themed';
+import { View } from '../../components/Themed';
 import { useState } from 'react';
-import { useWallet } from '../providers/wallet/WalletProvider';
-import { RootTabScreenProps } from '../types';
+import { useWallet } from '../../providers/wallet/WalletProvider';
+import { RootTabScreenProps } from '../../types';
+import Header from '../../components/Header';
+import { Container } from './styles';
 
 const onDisconnectRedirectLink = Linking.createURL("onDisconnect");
 const buildUrl = (path: string, params: URLSearchParams) =>
@@ -52,12 +54,13 @@ export default function HomeScreen({ navigation }: RootTabScreenProps<'Home'>) {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#333" }}>
+    <Container>
       <StatusBar style="light" />
-      <View style={{ flex: 0, paddingTop: 20, paddingBottom: 40 }}>
+      <Header />
+      {/* <View style={{ flex: 0, paddingTop: 20, paddingBottom: 40 }}>
         <Btn title="Disconnect" onPress={disconnect} />
-      </View>
-    </View>
+      </View> */}
+    </Container>
   );
 }
 
