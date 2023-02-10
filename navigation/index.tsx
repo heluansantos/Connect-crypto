@@ -6,7 +6,6 @@ import * as React from 'react';
 import { ColorSchemeName, Pressable } from 'react-native';
 import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
-import { useWallet } from '../providers/wallet/WalletProvider';
 import MyCollectionsScreen from '../screens/MyCollections';
 import Connect from '../screens/Connect';
 import HomeScreen from '../screens/Home';
@@ -18,6 +17,7 @@ import LinkingConfiguration from './LinkingConfiguration';
 import CreateSPLtokenScreen from '../screens/CreateSPLtoken';
 import SettingsScreen from '../screens/Settings';
 import SwapTokensScreen from '../screens/SwapTokens';
+import { usePhantom } from '../providers/wallet/PhantomContext';
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
   return (
@@ -32,12 +32,12 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function RootNavigator() {
-  const {session} = useWallet()
+  const {publicKey} = usePhantom()
   
   return (
     <Stack.Navigator>
       {
-        !session ? <Stack.Screen name="Root" component={BottomTabNavigator} options={{ headerShown: false }} /> :
+        publicKey ? <Stack.Screen name="Root" component={BottomTabNavigator} options={{ headerShown: false }} /> :
           <Stack.Screen name="Connect" component={Connect} options={{ headerShown: false }} />
       }
       {/* <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} /> */}

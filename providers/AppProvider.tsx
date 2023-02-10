@@ -1,6 +1,5 @@
 import React from 'react'
-import { WalletProvider } from './wallet/WalletProvider'
-
+import { PhantomContextProvider } from './wallet/PhantomContext'
 
 interface Props {
   children: React.ReactNode
@@ -8,7 +7,7 @@ interface Props {
 
 const AppProvider: React.FC<Props> = ({ children }) => {
   return (
-    <WalletProvider>{children}</WalletProvider>
+    <PhantomContextProvider>{children}</PhantomContextProvider>
   )
 }
 
