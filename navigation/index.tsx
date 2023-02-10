@@ -21,6 +21,15 @@ import { usePhantom } from '../providers/wallet/PhantomContext';
 
 // Icons
 import IconHome from '../assets/icons/IconHome.svg'
+import IconWhiteHome from '../assets/icons/IconWhiteHome.svg'
+import IconSwap from '../assets/icons/IconSwap.svg'
+import IconWhiteSwap from '../assets/icons/IconWhiteSwap.svg'
+import IconCollections from '../assets/icons/IconCollections.svg'
+import IconWhiteCollections from '../assets/icons/IconWhiteCollections.svg'
+import IconToken from '../assets/icons/IconToken.svg'
+import IconWhiteToken from '../assets/icons/IconWhiteToken.svg'
+import IconSettings from '../assets/icons/IconSettings.svg'
+import IconWhiteSettings from '../assets/icons/IconWhiteSettings.svg'
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
   return (
@@ -72,7 +81,7 @@ function BottomTabNavigator() {
         component={HomeScreen}
         options={{
           title: 'Home',
-          tabBarIcon: ({ color,focused }) => <TabBarIcon name="code" color={color} />,
+          tabBarIcon: ({ focused }) => focused ? <IconWhiteHome /> : <IconHome />,
         }}
       />
       <BottomTab.Screen
@@ -80,7 +89,7 @@ function BottomTabNavigator() {
         component={SwapTokensScreen}
         options={{
           title: 'SwapTokens',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          tabBarIcon: ({ focused }) => focused ? <IconWhiteSwap /> : <IconSwap />,
         }}
       />
       <BottomTab.Screen
@@ -88,7 +97,7 @@ function BottomTabNavigator() {
         component={MyCollectionsScreen}
         options={{
           title: 'Collections',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          tabBarIcon: ({ focused }) => focused ? <IconWhiteCollections /> : <IconCollections />,
         }}
       />
       <BottomTab.Screen
@@ -96,7 +105,7 @@ function BottomTabNavigator() {
         component={CreateSPLtokenScreen}
         options={{
           title: 'CreateSPLtoken',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          tabBarIcon: ({ focused }) => focused ? <IconWhiteToken /> : <IconToken />,
         }}
       />
       <BottomTab.Screen
@@ -104,7 +113,7 @@ function BottomTabNavigator() {
         component={SettingsScreen}
         options={{
           title: 'Settings',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          tabBarIcon: ({ focused }) => focused ? <IconWhiteSettings /> : <IconSettings />,
         }}
       />
     </BottomTab.Navigator>

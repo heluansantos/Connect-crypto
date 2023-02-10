@@ -4,7 +4,6 @@ import { View } from '../../components/Themed';
 import { RootTabScreenProps } from '../../types';
 import Header from '../../components/Header';
 import { Container } from './styles';
-import IconLogo from '../../assets/icons/IconLogo.svg'
 
 export default function HomeScreen({ navigation }: RootTabScreenProps<'Home'>) {
 
@@ -12,7 +11,6 @@ export default function HomeScreen({ navigation }: RootTabScreenProps<'Home'>) {
     <Container>
       <StatusBar style="light" />
       <Header />
-      <IconLogo />
       {/* <View style={{ flex: 0, paddingTop: 20, paddingBottom: 40 }}>
         <Btn title="Disconnect" onPress={disconnect} />
       </View> */}

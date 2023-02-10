@@ -1,6 +1,7 @@
 import { Image } from "react-native";
 import { Text, View } from "../Themed";
 import { Container } from "./styles";
+import IconLogo from '../../assets/icons/IconLogo.svg'
 
 
 const Header = () => {
@@ -11,21 +12,13 @@ const Header = () => {
           alignItems: 'center'
         }}>
             <View>
-            <Image 
-            source={{
-              uri: 'https://reactnative.dev/img/tiny_logo.png',
-            }}
-            style={{
-              height: 30,
-              width: 30,
-              borderRadius: 15,
-              marginRight: 2,
-            }}/>
+            <IconLogo/>
             </View>
            <View>
             <Text style={{
               fontSize: 14,
               lineHeight: 19,
+              marginLeft: 10,
               color: '#D19DF5',
             }}>Slide Labs</Text>
            </View>
