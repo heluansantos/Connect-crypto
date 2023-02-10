@@ -1,11 +1,13 @@
-import React, {createContext, ReactNode, useCallback, useContext, useMemo, useState} from 'react';
+import React, {createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState} from 'react';
 import nacl from 'tweetnacl';
 import {BoxKeyPair} from 'tweetnacl';
 import bs58 from 'bs58';
-import {PublicKey, Transaction} from '@solana/web3.js';
 import {CommonWallet} from './CommonWallet';
-import { LinkingOptions } from '@react-navigation/native';
-import { Linking } from 'react-native';
+import * as Linking from "expo-linking";
+import {
+  PublicKey,
+  Transaction,
+} from "@solana/web3.js";
 
 export const PhantomWalletName = 'Phantom';
 export const PhantomWalletUrl = 'https://phantom.app/';
@@ -82,23 +84,16 @@ interface Props {
   children: React.ReactNode;
 }
 
-export const PhantomContextProvider: React.FC<Props> =(props,{
-  // Linking,
-  cluster,
-  appUrl,
-  protocol,
-}: {
-  // Linking: ReactNativeLinking;
-  cluster: Cluster;
-  appUrl: string;
-  protocol: string;
-}) => {
+export const PhantomContextProvider: React.FC<Props> =(props) => {
   const name = PhantomWalletName;
   const url = PhantomWalletUrl;
   const icon = PhantomIconUrl;
   const readyState = 'Installed';
   const connecting = false;
   const connected = true;
+  const cluster = "mainnet-beta"
+  const protocol = "connect"
+  const appUrl = "https://phantom.app"
 
   const wallets: string[] = [];
   const autoConnect = true;
@@ -149,8 +144,8 @@ export const PhantomContextProvider: React.FC<Props> =(props,{
     },
     [Linking]
   );
-
-  const connect = useCallback(() => {
+  
+  const connect = useCallback(async() => {
     const dAppKeypair = nacl.box.keyPair();
     const requestParams = new URLSearchParams({
       dapp_encryption_public_key: bs58.encode(dAppKeypair.publicKey),
@@ -158,6 +153,8 @@ export const PhantomContextProvider: React.FC<Props> =(props,{
       app_url: appUrl,
       redirect_link: protocol + RedirectRoutes.OnConnect,
     });
+
+    console.log(requestParams)
 
     const onResponse: PhantomResponseHandler<void> = (
       responseParams: URLSearchParams
