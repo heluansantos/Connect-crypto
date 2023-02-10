@@ -23,7 +23,10 @@ export type RootStackScreenProps<Screen extends keyof RootStackParamList> = Nati
 export type RootTabParamList = {
   Wallet: undefined;
   Home: undefined;
-  Collections: undefined;
+  MyCollections: undefined;
+  Settings: undefined;
+  CreateSPLtoken: undefined;
+  SwapTokens: undefined;
 };
 
 export type RootTabScreenProps<Screen extends keyof RootTabParamList> = CompositeScreenProps<

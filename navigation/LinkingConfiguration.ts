@@ -9,19 +9,29 @@ const linking: LinkingOptions<RootStackParamList> = {
     screens: {
       Root: {
         screens: {
-          Wallet: {
-            screens: {
-              WalletScreen: 'wallet',
-            },
-          },
           Home: {
             screens: {
               WalletScreen: 'home',
             },
           },
-          Collections: {
+          MyCollections: {
             screens: {
-              WalletScreen: 'collections',
+              WalletScreen: 'mycollections',
+            },
+          },
+          Settings: {
+            screens: {
+              WalletScreen: 'settings',
+            },
+          },
+          CreateSPLtoken: {
+            screens: {
+              WalletScreen: 'createspltoken',
+            },
+          },
+          SwapTokens: {
+            screens: {
+              WalletScreen: 'swaptokens',
             },
           },
         },

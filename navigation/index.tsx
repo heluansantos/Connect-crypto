@@ -7,7 +7,7 @@ import { ColorSchemeName, Pressable } from 'react-native';
 import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
 import { useWallet } from '../providers/wallet/WalletProvider';
-import CollectionsScreen from '../screens/Collections';
+import MyCollectionsScreen from '../screens/MyCollections';
 import Connect from '../screens/Connect';
 import HomeScreen from '../screens/Home';
 import ModalScreen from '../screens/ModalScreen';
@@ -15,6 +15,9 @@ import NotFoundScreen from '../screens/NotFoundScreen';
 
 import { RootStackParamList, RootTabParamList, RootTabScreenProps } from '../types';
 import LinkingConfiguration from './LinkingConfiguration';
+import CreateSPLtokenScreen from '../screens/CreateSPLtoken';
+import SettingsScreen from '../screens/Settings';
+import SwapTokensScreen from '../screens/SwapTokens';
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
   return (
@@ -34,7 +37,7 @@ function RootNavigator() {
   return (
     <Stack.Navigator>
       {
-        session ? <Stack.Screen name="Root" component={BottomTabNavigator} options={{ headerShown: false }} /> :
+        !session ? <Stack.Screen name="Root" component={BottomTabNavigator} options={{ headerShown: false }} /> :
           <Stack.Screen name="Connect" component={Connect} options={{ headerShown: false }} />
       }
       {/* <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} /> */}
@@ -65,10 +68,34 @@ function BottomTabNavigator() {
         }}
       />
       <BottomTab.Screen
-        name="Collections"
-        component={CollectionsScreen}
+        name="SwapTokens"
+        component={SwapTokensScreen}
+        options={{
+          title: 'SwapTokens',
+          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+        }}
+      />
+      <BottomTab.Screen
+        name="MyCollections"
+        component={MyCollectionsScreen}
         options={{
           title: 'Collections',
+          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+        }}
+      />
+      <BottomTab.Screen
+        name="CreateSPLtoken"
+        component={CreateSPLtokenScreen}
+        options={{
+          title: 'CreateSPLtoken',
+          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+        }}
+      />
+      <BottomTab.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{
+          title: 'Settings',
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
         }}
       />
