@@ -19,6 +19,9 @@ import SettingsScreen from '../screens/Settings';
 import SwapTokensScreen from '../screens/SwapTokens';
 import { usePhantom } from '../providers/wallet/PhantomContext';
 
+// Icons
+import IconHome from '../assets/icons/IconHome.svg'
+
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
   return (
     <NavigationContainer
@@ -37,7 +40,7 @@ function RootNavigator() {
   return (
     <Stack.Navigator>
       {
-        publicKey ? <Stack.Screen name="Root" component={BottomTabNavigator} options={{ headerShown: false }} /> :
+        !publicKey ? <Stack.Screen name="Root" component={BottomTabNavigator} options={{ headerShown: false }} /> :
           <Stack.Screen name="Connect" component={Connect} options={{ headerShown: false }} />
       }
       {/* <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} /> */}
@@ -69,7 +72,7 @@ function BottomTabNavigator() {
         component={HomeScreen}
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          tabBarIcon: ({ color,focused }) => <TabBarIcon name="code" color={color} />,
         }}
       />
       <BottomTab.Screen
