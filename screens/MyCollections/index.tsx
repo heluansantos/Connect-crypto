@@ -1,5 +1,5 @@
-import { Text } from '../../components/Themed';
-import { Container } from './styles';
+import { Text } from "../../components/Themed";
+import { Container } from "./styles";
 
 export default function MyCollections() {
   return (
