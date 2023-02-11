@@ -90,3 +90,10 @@ export const BalanceTitle = styled.Text`
 
   color: #ffffff;
 `;
+
+export const List = styled.ScrollView.attrs({
+  horizontal: false,
+})`
+  width: 90%;
+  height: 100%;
+`;

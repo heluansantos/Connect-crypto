@@ -1,6 +1,15 @@
 import { StatusBar } from "expo-status-bar";
-import { RootTabScreenProps } from "../../types";
+
+// Providers
+import { usePhantom } from "../../providers/wallet/PhantomContext";
+
+// Components
+import ItemCrypto from "../../components/ItemCrypto";
 import Header from "../../components/Header";
+
+// Icons
+import IconArrowDownRight from "../../assets/icons/IconArrowDownRight.svg";
+import IconArrowDownLeft from "../../assets/icons/IconArrowDownLeft.svg";
 
 // Styles
 import {
@@ -8,6 +17,7 @@ import {
   ButtonAction,
   ButtonActionTitle,
   Container,
+  List,
   ListTitleLeft,
   ListTitleRight,
   SubTitle,
@@ -18,11 +28,43 @@ import {
   ViewListTitle,
 } from "./styles";
 
-// Icons
-import IconArrowDownRight from "../../assets/icons/IconArrowDownRight.svg";
-import IconArrowDownLeft from "../../assets/icons/IconArrowDownLeft.svg";
+//Utils
+import { RootTabScreenProps } from "../../types";
 
 export default function HomeScreen({ navigation }: RootTabScreenProps<"Home">) {
+  const { wallet } = usePhantom();
+  const cryptoList = [
+    {
+      id: 0,
+      icon: wallet.icon,
+      nick: "BTC",
+      title: "Biticoin",
+      balance: 530.9,
+      price: 23000,
+      positiveBalance: 10.23,
+      negativeBalance: null,
+    },
+    {
+      id: 1,
+      icon: wallet.icon,
+      nick: "ETH",
+      title: "Ethereum",
+      balance: 30,
+      price: 1200,
+      positiveBalance: null,
+      negativeBalance: 10,
+    },
+    {
+      id: 2,
+      icon: wallet.icon,
+      nick: "HNT",
+      title: "Helium",
+      balance: 1240,
+      price: 2.5,
+      positiveBalance: null,
+      negativeBalance: 50,
+    },
+  ];
   return (
     <Container>
       <StatusBar style="light" />
@@ -57,6 +99,11 @@ export default function HomeScreen({ navigation }: RootTabScreenProps<"Home">) {
           <ListTitleLeft>Token list</ListTitleLeft>
           <ListTitleRight>Manage token list</ListTitleRight>
         </ViewListTitle>
+        <List>
+          {cryptoList.map((crypto) => {
+            return <ItemCrypto />;
+          })}
+        </List>
       </ViewList>
     </Container>
   );
