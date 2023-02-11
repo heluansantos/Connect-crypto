@@ -1,43 +1,43 @@
-import { LinkingOptions } from '@react-navigation/native';
-import * as Linking from 'expo-linking';
+import { LinkingOptions } from "@react-navigation/native";
+import * as Linking from "expo-linking";
 
-import { RootStackParamList } from '../types';
+import { RootStackParamList } from "../types";
 
 const linking: LinkingOptions<RootStackParamList> = {
-  prefixes: [Linking.createURL('/')],
+  prefixes: [Linking.createURL("/")],
   config: {
     screens: {
       Root: {
         screens: {
           Home: {
             screens: {
-              WalletScreen: 'home',
+              WalletScreen: "home",
             },
           },
           MyCollections: {
             screens: {
-              WalletScreen: 'mycollections',
+              WalletScreen: "mycollections",
             },
           },
           Settings: {
             screens: {
-              WalletScreen: 'settings',
+              WalletScreen: "settings",
             },
           },
           CreateSPLtoken: {
             screens: {
-              WalletScreen: 'createspltoken',
+              WalletScreen: "createspltoken",
             },
           },
           SwapTokens: {
             screens: {
-              WalletScreen: 'swaptokens',
+              WalletScreen: "swaptokens",
             },
           },
         },
       },
-      Modal: 'modal',
-      NotFound: '*',
+      Modal: "modal",
+      NotFound: "*",
     },
   },
 };

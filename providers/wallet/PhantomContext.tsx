@@ -1,25 +1,29 @@
-import React, {createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState} from 'react';
-import nacl from 'tweetnacl';
-import {BoxKeyPair} from 'tweetnacl';
-import bs58 from 'bs58';
-import {CommonWallet} from './CommonWallet';
+import React, {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
+import nacl from "tweetnacl";
+import { BoxKeyPair } from "tweetnacl";
+import bs58 from "bs58";
+import { CommonWallet } from "./CommonWallet";
 import * as Linking from "expo-linking";
-import {
-  PublicKey,
-  Transaction,
-} from "@solana/web3.js";
+import { PublicKey, Transaction } from "@solana/web3.js";
 
-export const PhantomWalletName = 'Phantom';
-export const PhantomWalletUrl = 'https://phantom.app/';
+export const PhantomWalletName = "Phantom";
+export const PhantomWalletUrl = "https://phantom.app/";
 export const PhantomIconUrl =
-  'https://www.gitbook.com/cdn-cgi/image/width=40,height=40,fit=contain,dpr=1,format=auto/https%3A%2F%2F3632261023-files.gitbook.io%2F~%2Ffiles%2Fv0%2Fb%2Fgitbook-legacy-files%2Fo%2Fspaces%252F-MVOiF6Zqit57q_hxJYp%252Favatar-1615495356537.png%3Fgeneration%3D1615495356841399%26alt%3Dmedia';
+  "https://www.gitbook.com/cdn-cgi/image/width=40,height=40,fit=contain,dpr=1,format=auto/https%3A%2F%2F3632261023-files.gitbook.io%2F~%2Ffiles%2Fv0%2Fb%2Fgitbook-legacy-files%2Fo%2Fspaces%252F-MVOiF6Zqit57q_hxJYp%252Favatar-1615495356537.png%3Fgeneration%3D1615495356841399%26alt%3Dmedia";
 
 interface ReactNativeLinking {
   openURL: (url: string) => Promise<void>;
   addEventListener: (
     event: string,
-    callback: (event: {url: string}) => void
-  ) => {remove: () => void};
+    callback: (event: { url: string }) => void
+  ) => { remove: () => void };
   children: ReactNode;
 }
 
@@ -31,7 +35,7 @@ export const PhantomContext = createContext<CommonWallet>({
   name: PhantomWalletName,
   url: PhantomWalletUrl,
   icon: PhantomIconUrl,
-  readyState: 'Installed',
+  readyState: "Installed",
   publicKey: null as unknown as PublicKey,
   connecting: false,
   connected: false,
@@ -46,54 +50,54 @@ export const PhantomContext = createContext<CommonWallet>({
   },
 
   connect: () => {
-    throw new Error('Not initialized!');
+    throw new Error("Not initialized!");
   },
   disconnect: () => {},
   signTransaction: (transaction: Transaction) => {
-    throw new Error('Not initialized!');
+    throw new Error("Not initialized!");
   },
   signMessage: (message: Uint8Array) => {
-    throw new Error('Not initialized!');
+    throw new Error("Not initialized!");
   },
 });
 
 enum RedirectRoutes {
-  OnConnect = 'onConnect',
-  OnSignTransaction = 'onSignTransaction',
-  OnSignMessage = 'onSignMessage',
+  OnConnect = "onConnect",
+  OnSignTransaction = "onSignTransaction",
+  OnSignMessage = "onSignMessage",
 }
 
 enum RequestRoutes {
-  Connect = 'connect',
-  SignTransaction = 'signTransaction',
-  SignMessage = 'signMessage',
+  Connect = "connect",
+  SignTransaction = "signTransaction",
+  SignMessage = "signMessage",
 }
 
 enum ResponseParams {
-  DATA = 'data',
-  NONCE = 'nonce',
-  PHANTOM_ENCRYPTION_PUBLIC_KEY = 'phantom_encryption_public_key',
+  DATA = "data",
+  NONCE = "nonce",
+  PHANTOM_ENCRYPTION_PUBLIC_KEY = "phantom_encryption_public_key",
 }
 
 export enum Cluster {
-  MAINNET = 'mainnet-beta',
-  DEVNET = 'devnet',
+  MAINNET = "mainnet-beta",
+  DEVNET = "devnet",
 }
 
 interface Props {
   children: React.ReactNode;
 }
 
-export const PhantomContextProvider: React.FC<Props> =(props) => {
+export const PhantomContextProvider: React.FC<Props> = (props) => {
   const name = PhantomWalletName;
   const url = PhantomWalletUrl;
   const icon = PhantomIconUrl;
-  const readyState = 'Installed';
+  const readyState = "Installed";
   const connecting = false;
   const connected = true;
-  const cluster = "mainnet-beta"
-  const protocol = "connect"
-  const appUrl = "https://phantom.app"
+  const cluster = "mainnet-beta";
+  const protocol = "connect";
+  const appUrl = "https://phantom.app";
 
   const wallets: string[] = [];
   const autoConnect = true;
@@ -117,16 +121,16 @@ export const PhantomContextProvider: React.FC<Props> =(props) => {
     ): Promise<T> => {
       let event: ReactLinkingEvent;
       const promise = new Promise<T>((resolve, reject) => {
-        event = Linking.addEventListener('url', ({url}) => {
+        event = Linking.addEventListener("url", ({ url }) => {
           const httpsUrl = url.replace(protocol, appUrl);
           const parsedUrl = new URL(httpsUrl);
 
           if (!new RegExp(redirectRoute).test(parsedUrl.pathname)) return;
 
           const params = parsedUrl.searchParams;
-          if (params.get('errorCode')) {
-            console.error('Error In Response', {params});
-            reject(new Error('Error in Phantom Response'));
+          if (params.get("errorCode")) {
+            console.error("Error In Response", { params });
+            reject(new Error("Error in Phantom Response"));
             return;
           }
 
@@ -144,8 +148,8 @@ export const PhantomContextProvider: React.FC<Props> =(props) => {
     },
     [Linking]
   );
-  
-  const connect = useCallback(async() => {
+
+  const connect = useCallback(async () => {
     const dAppKeypair = nacl.box.keyPair();
     const requestParams = new URLSearchParams({
       dapp_encryption_public_key: bs58.encode(dAppKeypair.publicKey),
@@ -154,7 +158,7 @@ export const PhantomContextProvider: React.FC<Props> =(props) => {
       redirect_link: protocol + RedirectRoutes.OnConnect,
     });
 
-    console.log(requestParams)
+    console.log(requestParams);
 
     const onResponse: PhantomResponseHandler<void> = (
       responseParams: URLSearchParams
@@ -193,7 +197,7 @@ export const PhantomContextProvider: React.FC<Props> =(props) => {
       );
 
       if (!sharedSecret || !keypair || !sharedSecret)
-        throw new Error('Wallet is not connected');
+        throw new Error("Wallet is not connected");
 
       const payload = {
         session,
@@ -233,7 +237,7 @@ export const PhantomContextProvider: React.FC<Props> =(props) => {
   const signMessage = useCallback(
     async (message: Uint8Array): Promise<Uint8Array> => {
       if (!sharedSecret || !keypair || !sharedSecret)
-        throw new Error('Wallet is not connected');
+        throw new Error("Wallet is not connected");
 
       const payload = {
         session,
@@ -254,9 +258,9 @@ export const PhantomContextProvider: React.FC<Props> =(props) => {
           responseParams.get(ResponseParams.DATA)!,
           responseParams.get(ResponseParams.NONCE)!,
           sharedSecret
-        ) as {signature: string};
+        ) as { signature: string };
 
-        const {signature} = signMessageData;
+        const { signature } = signMessageData;
         return bs58.decode(signature);
       };
       const promise = waitForResponse(
@@ -279,53 +283,52 @@ export const PhantomContextProvider: React.FC<Props> =(props) => {
     setSharedSecret(null);
   }
 
-  
-      const value= useMemo(
-        () => ({
-        name,
-        url,
-        icon,
-        readyState,
-        connected,
-        connecting,
-        wallets,
-        autoConnect,
-        disconnecting,
-        wallet,
-        publicKey: publicKey as PublicKey,
-        connect,
-        disconnect,
-        signTransaction,
-        signMessage,
-      }),
-      [
-        name,
-        url,
-        icon,
-        readyState,
-        connected,
-        connecting,
-        wallets,
-        autoConnect,
-        disconnecting,
-        wallet,
-        publicKey,
-        connect,
-        disconnect,
-        signTransaction,
-        signMessage,
-      ],
-      )
-  return <PhantomContext.Provider value={value} {...props} />
-}
+  const value = useMemo(
+    () => ({
+      name,
+      url,
+      icon,
+      readyState,
+      connected,
+      connecting,
+      wallets,
+      autoConnect,
+      disconnecting,
+      wallet,
+      publicKey: publicKey as PublicKey,
+      connect,
+      disconnect,
+      signTransaction,
+      signMessage,
+    }),
+    [
+      name,
+      url,
+      icon,
+      readyState,
+      connected,
+      connecting,
+      wallets,
+      autoConnect,
+      disconnecting,
+      wallet,
+      publicKey,
+      connect,
+      disconnect,
+      signTransaction,
+      signMessage,
+    ]
+  );
+  return <PhantomContext.Provider value={value} {...props} />;
+};
 
 export const usePhantom = (): CommonWallet => {
-  const context = useContext(PhantomContext)
+  const context = useContext(PhantomContext);
   if (context === undefined) {
-    throw new Error('Error in PhantomContext')
+    throw new Error("Error in PhantomContext");
   }
-  return context
-}
+  return context;
+};
 
 const buildUrl = (path: string, params: URLSearchParams) =>
   `${PhantomWalletUrl}ul/v1/${path}?${params.toString()}`;
@@ -341,9 +344,9 @@ function decryptPayload(
     sharedSecret
   );
   if (!decryptedData) {
-    throw new Error('Unable to decrypt data');
+    throw new Error("Unable to decrypt data");
   }
-  return JSON.parse(Buffer.from(decryptedData).toString('utf8'));
+  return JSON.parse(Buffer.from(decryptedData).toString("utf8"));
 }
 
 function encryptPayload(
