@@ -100,8 +100,8 @@ export default function HomeScreen({ navigation }: RootTabScreenProps<"Home">) {
           <ListTitleRight>Manage token list</ListTitleRight>
         </ViewListTitle>
         <List>
-          {cryptoList.map((crypto) => {
-            return <ItemCrypto />;
+          {cryptoList.map((crypto, index) => {
+            return <ItemCrypto key={index} />;
           })}
         </List>
       </ViewList>

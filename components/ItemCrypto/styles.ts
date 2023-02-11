@@ -31,8 +31,7 @@ export const Balance = styled.Text<BalanceProps>`
       ? "#58CC4E"
       : props.status === "negative"
       ? "#FF5656"
-      : "#858585"}
-  font-stretch: 100;
+      : "#858585"};
 `;
 
 export const SubTitle = styled.Text`
