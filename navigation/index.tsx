@@ -1,5 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { BlurView } from "expo-blur";
 import {
   NavigationContainer,
   DefaultTheme,
@@ -93,10 +94,12 @@ function BottomTabNavigator() {
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme].tint,
         tabBarStyle: {
-          backgroundColor: "#222222",
           height: 100,
+          position: "absolute",
+          backgroundColor: "rgba(0, 0, 0, 0.8)",
         },
         headerShown: false,
+        tabBarBackground: () => <BlurView tint="light" intensity={100} />,
       }}
     >
       <BottomTab.Screen

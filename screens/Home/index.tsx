@@ -13,6 +13,8 @@ import IconArrowDownLeft from "../../assets/icons/IconArrowDownLeft.svg";
 
 // Styles
 import {
+  BalancePercent,
+  BalancePercentView,
   BalanceTitle,
   ButtonAction,
   ButtonActionTitle,
@@ -30,6 +32,7 @@ import {
 
 //Utils
 import { RootTabScreenProps } from "../../types";
+import { BlurView } from "expo-blur";
 
 export default function HomeScreen({ navigation }: RootTabScreenProps<"Home">) {
   const { wallet } = usePhantom();
@@ -56,6 +59,36 @@ export default function HomeScreen({ navigation }: RootTabScreenProps<"Home">) {
     },
     {
       id: 2,
+      icon: wallet.icon,
+      nick: "HNT",
+      title: "Helium",
+      balance: 1240,
+      price: 2.5,
+      positiveBalance: null,
+      negativeBalance: 50,
+    },
+    {
+      id: 3,
+      icon: wallet.icon,
+      nick: "BTC",
+      title: "Biticoin",
+      balance: 530.9,
+      price: 23000,
+      positiveBalance: 10.23,
+      negativeBalance: null,
+    },
+    {
+      id: 4,
+      icon: wallet.icon,
+      nick: "ETH",
+      title: "Ethereum",
+      balance: 30,
+      price: 1200,
+      positiveBalance: null,
+      negativeBalance: 10,
+    },
+    {
+      id: 5,
       icon: wallet.icon,
       nick: "HNT",
       title: "Helium",
@@ -91,6 +124,15 @@ export default function HomeScreen({ navigation }: RootTabScreenProps<"Home">) {
         <ViewBalanceInfo>
           <SubTitle>Your balance</SubTitle>
           <BalanceTitle>$ 2.450,56</BalanceTitle>
+        </ViewBalanceInfo>
+
+        <ViewBalanceInfo type="row">
+          <BalancePercentView>
+            <BalancePercent status="negative">-$2,50%</BalancePercent>
+          </BalancePercentView>
+          <BalancePercentView>
+            <BalancePercent status="positive">+$2,50%</BalancePercent>
+          </BalancePercentView>
         </ViewBalanceInfo>
       </ViewBalance>
 

@@ -4,6 +4,14 @@ interface ButtonActionProps {
   type?: string;
 }
 
+interface ViewBalanceInfoProps {
+  type?: string;
+}
+
+interface BalanceProps {
+  status?: string;
+}
+
 export const Container = styled.SafeAreaView`
   flex: 1;
   background-color: #222222;
@@ -12,6 +20,7 @@ export const Container = styled.SafeAreaView`
 export const ViewList = styled.View`
   background-color: #222222;
   align-items: center;
+  margin-top: 50px;
 `;
 
 export const ViewListTitle = styled.View`
@@ -45,6 +54,8 @@ export const ViewButtons = styled.View`
   align-items: center;
   align-self: center;
   margin-top: 25px;
+
+  margin-bottom: 40px;
 `;
 
 export const ButtonAction = styled.TouchableOpacity<ButtonActionProps>`
@@ -63,12 +74,12 @@ export const ButtonActionTitle = styled.Text`
   color: #ffffff;
 `;
 
-export const ViewBalanceInfo = styled.View`
+export const ViewBalanceInfo = styled.View<ViewBalanceInfoProps>`
   align-items: center;
   align-self: center;
   justify-content: center;
   width: 60%;
-  margin-vertical: 40px;
+  flex-direction: ${(props) => (props.type === "row" ? "row" : "colunm")};
 `;
 
 export const SubTitle = styled.Text`
@@ -96,4 +107,27 @@ export const List = styled.ScrollView.attrs({
 })`
   width: 90%;
   height: 100%;
+`;
+
+export const BalancePercent = styled.Text<BalanceProps>`
+  font-style: normal;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 19px;
+  letter-spacing: 0.02em;
+  color: #fa5454;
+  color: ${(props) =>
+    props.status === "positive"
+      ? "#58CC4E"
+      : props.status === "negative"
+      ? "#FF5656"
+      : "#858585"};
+`;
+
+export const BalancePercentView = styled.View`
+  border-radius: 8px;
+  padding-vertical: 3px;
+  padding-horizontal: 10px;
+  margin: 5px;
+  background: rgba(255, 135, 135, 0.1);
 `;
