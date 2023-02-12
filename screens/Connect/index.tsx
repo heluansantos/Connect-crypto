@@ -1,23 +1,19 @@
-import "react-native-get-random-values";
-import "react-native-url-polyfill/auto";
-import { Buffer } from "buffer";
-global.Buffer = global.Buffer || Buffer;
+import { usePhantom } from "../../providers/wallet/PhantomContext";
 import React from "react";
 import { Button, View } from "react-native";
-import { StatusBar } from "expo-status-bar";
-import { Container } from "./styles";
-import { usePhantom } from "../../providers/wallet/PhantomContext";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 export default function Connect() {
-  const { publicKey, connect } = usePhantom();
-  console.log(publicKey);
-
+  const { connect } = usePhantom();
   return (
-    <Container>
-      <StatusBar style="light" />
-      <View style={{ flex: 0, paddingTop: 20, paddingBottom: 40 }}>
-        <Button title="Connect" onPress={connect} />
-      </View>
-    </Container>
+    <SafeAreaProvider>
+      <SafeAreaView>
+        <View>
+          <View style={{ marginTop: 15 }}>
+            <Button title="Connect Phantom" onPress={connect} />
+          </View>
+        </View>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }

@@ -1,323 +1,201 @@
+import "react-native-get-random-values";
+import "react-native-url-polyfill/auto";
+import { Buffer } from "buffer";
+global.Buffer = global.Buffer || Buffer;
 import React, {
   createContext,
-  ReactNode,
-  useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
-import nacl from "tweetnacl";
-import { BoxKeyPair } from "tweetnacl";
-import bs58 from "bs58";
-import { CommonWallet } from "./CommonWallet";
 import * as Linking from "expo-linking";
-import { PublicKey, Transaction } from "@solana/web3.js";
+import nacl from "tweetnacl";
+import bs58 from "bs58";
+import {
+  clusterApiUrl,
+  Connection,
+  PublicKey,
+  Transaction,
+} from "@solana/web3.js";
+import { decryptPayload } from "../../utils/decryptPayload";
+import { encryptPayload } from "../../utils/encryptPayload";
+import { buildUrl } from "../../utils/buildUrl";
 
-export const PhantomWalletName = "Phantom";
-export const PhantomWalletUrl = "https://phantom.app/";
-export const PhantomIconUrl =
-  "https://www.gitbook.com/cdn-cgi/image/width=40,height=40,fit=contain,dpr=1,format=auto/https%3A%2F%2F3632261023-files.gitbook.io%2F~%2Ffiles%2Fv0%2Fb%2Fgitbook-legacy-files%2Fo%2Fspaces%252F-MVOiF6Zqit57q_hxJYp%252Favatar-1615495356537.png%3Fgeneration%3D1615495356841399%26alt%3Dmedia";
+const onConnectRedirectLink = Linking.createURL("onConnect");
+const onDisconnectRedirectLink = Linking.createURL("onDisconnect");
+const onSignAndSendTransactionRedirectLink = Linking.createURL(
+  "onSignAndSendTransaction"
+);
 
-interface ReactNativeLinking {
-  openURL: (url: string) => Promise<void>;
-  addEventListener: (
-    event: string,
-    callback: (event: { url: string }) => void
-  ) => { remove: () => void };
-  children: ReactNode;
-}
-
-interface ReactLinkingEvent {
-  remove: () => void;
+export interface CommonWallet {
+  phantomWalletPublicKey: PublicKey | null;
+  session: string | undefined;
+  connect?: () => Promise<void>;
+  disconnect: () => void;
+  // signTransaction: (transaction: Transaction) => Promise<Transaction | Buffer>;
+  // signMessage: (message: Uint8Array) => Promise<Uint8Array>;
 }
 
 export const PhantomContext = createContext<CommonWallet>({
-  name: PhantomWalletName,
-  url: PhantomWalletUrl,
-  icon: PhantomIconUrl,
-  readyState: "Installed",
-  publicKey: null as unknown as PublicKey,
-  connecting: false,
-  connected: false,
-
-  wallets: [],
-  autoConnect: true,
-  disconnecting: false,
-  wallet: {
-    name: PhantomWalletName,
-    url: PhantomWalletUrl,
-    icon: PhantomIconUrl,
-  },
-
+  phantomWalletPublicKey: null,
+  session: undefined,
   connect: () => {
     throw new Error("Not initialized!");
   },
   disconnect: () => {},
-  signTransaction: (transaction: Transaction) => {
-    throw new Error("Not initialized!");
-  },
-  signMessage: (message: Uint8Array) => {
-    throw new Error("Not initialized!");
-  },
+  // signTransaction: (transaction: Transaction) => {
+  //   throw new Error("Not initialized!");
+  // },
+  // signMessage: (message: Uint8Array) => {
+  //   throw new Error("Not initialized!");
+  // },
 });
 
-enum RedirectRoutes {
-  OnConnect = "onConnect",
-  OnSignTransaction = "onSignTransaction",
-  OnSignMessage = "onSignMessage",
-}
-
-enum RequestRoutes {
-  Connect = "connect",
-  SignTransaction = "signTransaction",
-  SignMessage = "signMessage",
-}
-
-enum ResponseParams {
-  DATA = "data",
-  NONCE = "nonce",
-  PHANTOM_ENCRYPTION_PUBLIC_KEY = "phantom_encryption_public_key",
-}
-
-export enum Cluster {
-  MAINNET = "mainnet-beta",
-  DEVNET = "devnet",
-}
+const connection = new Connection(clusterApiUrl("mainnet-beta"));
 
 interface Props {
   children: React.ReactNode;
 }
 
 export const PhantomContextProvider: React.FC<Props> = (props) => {
-  const name = PhantomWalletName;
-  const url = PhantomWalletUrl;
-  const icon = PhantomIconUrl;
-  const readyState = "Installed";
-  const connecting = false;
-  const connected = true;
-  const cluster = "mainnet-beta";
-  const protocol = "connect";
-  const appUrl = "https://phantom.app";
+  const [deeplink, setDeepLink] = useState<string>("");
+  const [dappKeyPair] = useState(nacl.box.keyPair());
 
-  const wallets: string[] = [];
-  const autoConnect = true;
-  const disconnecting = false;
-  const wallet = {
-    name: PhantomWalletName,
-    url: PhantomWalletUrl,
-    icon: PhantomIconUrl,
-  };
+  const [sharedSecret, setSharedSecret] = useState<Uint8Array>();
+  const [session, setSession] = useState<string>();
+  const [phantomWalletPublicKey, setPhantomWalletPublicKey] =
+    useState<PublicKey | null>(null);
 
-  const [publicKey, setPublicKey] = useState<PublicKey | null>(null);
-  const [keypair, setKeypair] = useState<BoxKeyPair | null>(null);
-  const [sharedSecret, setSharedSecret] = useState<Uint8Array | null>(null);
-  const [session, setSession] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  type PhantomResponseHandler<T> = (params: URLSearchParams) => T;
-  const waitForResponse = useCallback(
-    <T extends unknown>(
-      redirectRoute: string,
-      handler: PhantomResponseHandler<T>
-    ): Promise<T> => {
-      let event: ReactLinkingEvent;
-      const promise = new Promise<T>((resolve, reject) => {
-        event = Linking.addEventListener("url", ({ url }) => {
-          const httpsUrl = url.replace(protocol, appUrl);
-          const parsedUrl = new URL(httpsUrl);
+  // Initialize our app's deeplinking protocol on app start-up
+  useEffect(() => {
+    const initializeDeeplinks = async () => {
+      const initialUrl = await Linking.getInitialURL();
+      if (initialUrl) {
+        setDeepLink(initialUrl);
+      }
+    };
+    initializeDeeplinks();
+    const listener = Linking.addEventListener("url", handleDeepLink);
+    return () => {
+      listener.remove();
+    };
+  }, []);
 
-          if (!new RegExp(redirectRoute).test(parsedUrl.pathname)) return;
+  const handleDeepLink = ({ url }: Linking.EventType) => setDeepLink(url);
 
-          const params = parsedUrl.searchParams;
-          if (params.get("errorCode")) {
-            console.error("Error In Response", { params });
-            reject(new Error("Error in Phantom Response"));
-            return;
-          }
+  useEffect(() => {
+    setSubmitting(false);
+    if (!deeplink) return;
 
-          try {
-            resolve(handler(params));
-          } catch (e) {
-            reject(e);
-          }
-        });
+    const url = new URL(deeplink);
+    const params = url.searchParams;
+
+    if (params.get("errorCode")) {
+      const error = Object.fromEntries([...params]);
+      const message =
+        error?.errorMessage ??
+        JSON.stringify(Object.fromEntries([...params]), null, 2);
+      console.log({
+        type: "error",
+        text1: "Error",
+        text2: message,
       });
+      console.log("error: ", message);
+      return;
+    }
 
-      return promise.finally(() => {
-        event.remove();
-      });
-    },
-    [Linking]
-  );
-
-  const connect = useCallback(async () => {
-    const dAppKeypair = nacl.box.keyPair();
-    const requestParams = new URLSearchParams({
-      dapp_encryption_public_key: bs58.encode(dAppKeypair.publicKey),
-      cluster,
-      app_url: appUrl,
-      redirect_link: protocol + RedirectRoutes.OnConnect,
-    });
-
-    console.log(requestParams);
-
-    const onResponse: PhantomResponseHandler<void> = (
-      responseParams: URLSearchParams
-    ) => {
+    if (/onConnect/.test(url.pathname)) {
       const sharedSecretDapp = nacl.box.before(
-        bs58.decode(
-          responseParams.get(ResponseParams.PHANTOM_ENCRYPTION_PUBLIC_KEY)!
-        ),
-        dAppKeypair.secretKey
+        bs58.decode(params.get("phantom_encryption_public_key")!),
+        dappKeyPair.secretKey
       );
-
       const connectData = decryptPayload(
-        responseParams.get(ResponseParams.DATA)!,
-        responseParams.get(ResponseParams.NONCE)!,
+        params.get("data")!,
+        params.get("nonce")!,
         sharedSecretDapp
       );
-
-      setKeypair(dAppKeypair);
+      console.log(`${connectData}`);
       setSharedSecret(sharedSecretDapp);
       setSession(connectData.session);
-      setPublicKey(new PublicKey(connectData.public_key));
-    };
-    const resPromise = waitForResponse(RedirectRoutes.OnConnect, onResponse);
+      setPhantomWalletPublicKey(new PublicKey(connectData.public_key));
+      console.log(`connected to ${connectData.public_key.toString()}`);
+    }
 
-    const url = buildUrl(RequestRoutes.Connect, requestParams);
+    if (/onDisconnect/.test(url.pathname)) {
+      setPhantomWalletPublicKey(null);
+    }
+
+    if (/onSignAndSendTransaction/.test(url.pathname)) {
+      const signAndSendTransactionData = decryptPayload(
+        params.get("data")!,
+        params.get("nonce")!,
+        sharedSecret
+      );
+    }
+  }, [deeplink]);
+
+  const connect = async () => {
+    const params = new URLSearchParams({
+      dapp_encryption_public_key: bs58.encode(dappKeyPair.publicKey),
+      cluster: "mainnet-beta",
+      app_url: "https://vercel.app/",
+      redirect_link: onConnectRedirectLink,
+    });
+    const url = buildUrl("connect", params);
     Linking.openURL(url);
-    return resPromise;
-  }, [Linking, cluster, waitForResponse]);
+  };
 
-  const signTransaction = useCallback(
-    (transaction: Transaction): Promise<Transaction> => {
-      const serializedTransaction = bs58.encode(
-        transaction.serialize({
-          requireAllSignatures: false,
-        })
-      );
+  const disconnect = async () => {
+    const payload = {
+      session,
+    };
+    const [nonce, encryptedPayload] = encryptPayload(payload, sharedSecret);
+    const params = new URLSearchParams({
+      dapp_encryption_public_key: bs58.encode(dappKeyPair.publicKey),
+      nonce: bs58.encode(nonce),
+      redirect_link: onDisconnectRedirectLink,
+      payload: bs58.encode(encryptedPayload),
+    });
+    const url = buildUrl("disconnect", params);
+    Linking.openURL(url);
+  };
 
-      if (!sharedSecret || !keypair || !sharedSecret)
-        throw new Error("Wallet is not connected");
-
-      const payload = {
-        session,
-        transaction: serializedTransaction,
-      };
-      const [nonce, encryptedPayload] = encryptPayload(payload, sharedSecret);
-      const requestParams = new URLSearchParams({
-        dapp_encryption_public_key: bs58.encode(keypair.publicKey),
-        nonce: bs58.encode(nonce),
-        redirect_link: protocol + RedirectRoutes.OnSignTransaction,
-        payload: bs58.encode(encryptedPayload),
-      });
-      const url = buildUrl(RequestRoutes.SignTransaction, requestParams);
-
-      const onResponse: PhantomResponseHandler<Transaction> = (
-        responseParams: URLSearchParams
-      ) => {
-        const signTransactionData = decryptPayload(
-          responseParams.get(ResponseParams.DATA)!,
-          responseParams.get(ResponseParams.NONCE)!,
-          sharedSecret
-        );
-
-        return Transaction.from(bs58.decode(signTransactionData.transaction));
-      };
-      const promise = waitForResponse(
-        RedirectRoutes.OnSignTransaction,
-        onResponse
-      );
-
-      Linking.openURL(url);
-      return promise;
-    },
-    [Linking, keypair, session, sharedSecret, waitForResponse]
-  );
-
-  const signMessage = useCallback(
-    async (message: Uint8Array): Promise<Uint8Array> => {
-      if (!sharedSecret || !keypair || !sharedSecret)
-        throw new Error("Wallet is not connected");
-
-      const payload = {
-        session,
-        message: bs58.encode(message),
-      };
-
-      const [nonce, encryptedPayload] = encryptPayload(payload, sharedSecret);
-
-      const requestParams = new URLSearchParams({
-        dapp_encryption_public_key: bs58.encode(keypair.publicKey),
-        nonce: bs58.encode(nonce),
-        redirect_link: protocol + RedirectRoutes.OnSignMessage,
-        payload: bs58.encode(encryptedPayload),
-      });
-
-      const responseHandler = (responseParams: URLSearchParams) => {
-        const signMessageData = decryptPayload(
-          responseParams.get(ResponseParams.DATA)!,
-          responseParams.get(ResponseParams.NONCE)!,
-          sharedSecret
-        ) as { signature: string };
-
-        const { signature } = signMessageData;
-        return bs58.decode(signature);
-      };
-      const promise = waitForResponse(
-        RedirectRoutes.OnSignMessage,
-        responseHandler
-      );
-
-      const url = buildUrl(RequestRoutes.SignMessage, requestParams);
-      Linking.openURL(url);
-
-      return promise;
-    },
-    [Linking, keypair, session, sharedSecret, waitForResponse]
-  );
-
-  function disconnect() {
-    setPublicKey(null);
-    setSession(null);
-    setKeypair(null);
-    setSharedSecret(null);
-  }
+  const signAndSendTransaction = async (transaction: Transaction) => {
+    if (!phantomWalletPublicKey) return;
+    setSubmitting(true);
+    transaction.feePayer = phantomWalletPublicKey;
+    transaction.recentBlockhash = (
+      await connection.getLatestBlockhash()
+    ).blockhash;
+    const serializedTransaction = transaction.serialize({
+      requireAllSignatures: false,
+    });
+    const payload = {
+      session,
+      transaction: bs58.encode(serializedTransaction),
+    };
+    const [nonce, encryptedPayload] = encryptPayload(payload, sharedSecret);
+    const params = new URLSearchParams({
+      dapp_encryption_public_key: bs58.encode(dappKeyPair.publicKey),
+      nonce: bs58.encode(nonce),
+      redirect_link: onSignAndSendTransactionRedirectLink,
+      payload: bs58.encode(encryptedPayload),
+    });
+    const url = buildUrl("signAndSendTransaction", params);
+    Linking.openURL(url);
+  };
 
   const value = useMemo(
     () => ({
-      name,
-      url,
-      icon,
-      readyState,
-      connected,
-      connecting,
-      wallets,
-      autoConnect,
-      disconnecting,
-      wallet,
-      publicKey: publicKey as PublicKey,
       connect,
       disconnect,
-      signTransaction,
-      signMessage,
+      phantomWalletPublicKey,
+      session,
     }),
-    [
-      name,
-      url,
-      icon,
-      readyState,
-      connected,
-      connecting,
-      wallets,
-      autoConnect,
-      disconnecting,
-      wallet,
-      publicKey,
-      connect,
-      disconnect,
-      signTransaction,
-      signMessage,
-    ]
+    [connect, disconnect, phantomWalletPublicKey, session]
   );
   return <PhantomContext.Provider value={value} {...props} />;
 };
@@ -329,37 +207,3 @@ export const usePhantom = (): CommonWallet => {
   }
   return context;
 };
-
-const buildUrl = (path: string, params: URLSearchParams) =>
-  `${PhantomWalletUrl}ul/v1/${path}?${params.toString()}`;
-
-function decryptPayload(
-  data: string,
-  nonce: string,
-  sharedSecret: Uint8Array
-): any {
-  const decryptedData = nacl.box.open.after(
-    bs58.decode(data),
-    bs58.decode(nonce),
-    sharedSecret
-  );
-  if (!decryptedData) {
-    throw new Error("Unable to decrypt data");
-  }
-  return JSON.parse(Buffer.from(decryptedData).toString("utf8"));
-}
-
-function encryptPayload(
-  payload: any,
-  sharedSecret: Uint8Array
-): [Uint8Array, Uint8Array] {
-  const nonce = nacl.randomBytes(24);
-
-  const encryptedPayload = nacl.box.after(
-    Buffer.from(JSON.stringify(payload)),
-    nonce,
-    sharedSecret
-  );
-
-  return [nonce, encryptedPayload];
-}

@@ -58,11 +58,11 @@ export default function Navigation({
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function RootNavigator() {
-  const { publicKey } = usePhantom();
+  const { phantomWalletPublicKey } = usePhantom();
 
   return (
     <Stack.Navigator>
-      {!publicKey ? (
+      {phantomWalletPublicKey ? (
         <Stack.Screen
           name="Root"
           component={BottomTabNavigator}
@@ -94,12 +94,14 @@ function BottomTabNavigator() {
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme].tint,
         tabBarStyle: {
-          height: 100,
+          height: 90,
           position: "absolute",
-          backgroundColor: "rgba(0, 0, 0, 0.8)",
+          backgroundColor: "rgba(38, 38, 38, 0.6)",
         },
         headerShown: false,
-        tabBarBackground: () => <BlurView tint="light" intensity={100} />,
+        tabBarBackground: () => (
+          <BlurView tint="dark" intensity={30} style={{ height: 90 }} />
+        ),
       }}
     >
       <BottomTab.Screen

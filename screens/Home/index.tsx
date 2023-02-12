@@ -32,72 +32,10 @@ import {
 
 //Utils
 import { RootTabScreenProps } from "../../types";
-import { BlurView } from "expo-blur";
 
 export default function HomeScreen({ navigation }: RootTabScreenProps<"Home">) {
-  const { wallet } = usePhantom();
-  const cryptoList = [
-    {
-      id: 0,
-      icon: wallet.icon,
-      nick: "BTC",
-      title: "Biticoin",
-      balance: 530.9,
-      price: 23000,
-      positiveBalance: 10.23,
-      negativeBalance: null,
-    },
-    {
-      id: 1,
-      icon: wallet.icon,
-      nick: "ETH",
-      title: "Ethereum",
-      balance: 30,
-      price: 1200,
-      positiveBalance: null,
-      negativeBalance: 10,
-    },
-    {
-      id: 2,
-      icon: wallet.icon,
-      nick: "HNT",
-      title: "Helium",
-      balance: 1240,
-      price: 2.5,
-      positiveBalance: null,
-      negativeBalance: 50,
-    },
-    {
-      id: 3,
-      icon: wallet.icon,
-      nick: "BTC",
-      title: "Biticoin",
-      balance: 530.9,
-      price: 23000,
-      positiveBalance: 10.23,
-      negativeBalance: null,
-    },
-    {
-      id: 4,
-      icon: wallet.icon,
-      nick: "ETH",
-      title: "Ethereum",
-      balance: 30,
-      price: 1200,
-      positiveBalance: null,
-      negativeBalance: 10,
-    },
-    {
-      id: 5,
-      icon: wallet.icon,
-      nick: "HNT",
-      title: "Helium",
-      balance: 1240,
-      price: 2.5,
-      positiveBalance: null,
-      negativeBalance: 50,
-    },
-  ];
+  const { disconnect } = usePhantom();
+
   return (
     <Container>
       <StatusBar style="light" />
@@ -105,14 +43,14 @@ export default function HomeScreen({ navigation }: RootTabScreenProps<"Home">) {
 
       <ViewBalance>
         <ViewButtons>
-          <ButtonAction onPress={() => {}} type="Deposit">
+          <ButtonAction onPress={disconnect} type="Deposit">
             <ButtonActionTitle>
               {" "}
               <IconArrowDownRight />
               Deposit
             </ButtonActionTitle>
           </ButtonAction>
-          <ButtonAction onPress={() => {}} type="Withdraw">
+          <ButtonAction onPress={disconnect} type="Withdraw">
             <ButtonActionTitle>
               {" "}
               <IconArrowDownLeft />
@@ -150,3 +88,66 @@ export default function HomeScreen({ navigation }: RootTabScreenProps<"Home">) {
     </Container>
   );
 }
+
+const cryptoList = [
+  {
+    id: 0,
+    icon: "wallet.icon",
+    nick: "BTC",
+    title: "Biticoin",
+    balance: 530.9,
+    price: 23000,
+    positiveBalance: 10.23,
+    negativeBalance: null,
+  },
+  {
+    id: 1,
+    icon: "wallet.icon",
+    nick: "ETH",
+    title: "Ethereum",
+    balance: 30,
+    price: 1200,
+    positiveBalance: null,
+    negativeBalance: 10,
+  },
+  {
+    id: 2,
+    icon: "wallet.icon",
+    nick: "HNT",
+    title: "Helium",
+    balance: 1240,
+    price: 2.5,
+    positiveBalance: null,
+    negativeBalance: 50,
+  },
+  {
+    id: 3,
+    icon: "wallet.icon",
+    nick: "BTC",
+    title: "Biticoin",
+    balance: 530.9,
+    price: 23000,
+    positiveBalance: 10.23,
+    negativeBalance: null,
+  },
+  {
+    id: 4,
+    icon: "wallet.icon",
+    nick: "ETH",
+    title: "Ethereum",
+    balance: 30,
+    price: 1200,
+    positiveBalance: null,
+    negativeBalance: 10,
+  },
+  {
+    id: 5,
+    icon: "wallet.icon",
+    nick: "HNT",
+    title: "Helium",
+    balance: 1240,
+    price: 2.5,
+    positiveBalance: null,
+    negativeBalance: 50,
+  },
+];
