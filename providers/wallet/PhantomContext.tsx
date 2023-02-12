@@ -4,6 +4,7 @@ import { Buffer } from "buffer";
 global.Buffer = global.Buffer || Buffer;
 import React, {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -15,6 +16,7 @@ import bs58 from "bs58";
 import {
   clusterApiUrl,
   Connection,
+  LAMPORTS_PER_SOL,
   PublicKey,
   Transaction,
 } from "@solana/web3.js";
@@ -31,6 +33,7 @@ const onSignAndSendTransactionRedirectLink = Linking.createURL(
 export interface CommonWallet {
   phantomWalletPublicKey: PublicKey | null;
   session: string | undefined;
+  balance: number | undefined;
   connect?: () => Promise<void>;
   disconnect: () => void;
   // signTransaction: (transaction: Transaction) => Promise<Transaction | Buffer>;
@@ -40,6 +43,7 @@ export interface CommonWallet {
 export const PhantomContext = createContext<CommonWallet>({
   phantomWalletPublicKey: null,
   session: undefined,
+  balance: undefined,
   connect: () => {
     throw new Error("Not initialized!");
   },
@@ -61,15 +65,13 @@ interface Props {
 export const PhantomContextProvider: React.FC<Props> = (props) => {
   const [deeplink, setDeepLink] = useState<string>("");
   const [dappKeyPair] = useState(nacl.box.keyPair());
-
+  const [balance, setBalance] = useState<number | undefined>();
   const [sharedSecret, setSharedSecret] = useState<Uint8Array>();
   const [session, setSession] = useState<string>();
   const [phantomWalletPublicKey, setPhantomWalletPublicKey] =
     useState<PublicKey | null>(null);
-
   const [submitting, setSubmitting] = useState(false);
 
-  // Initialize our app's deeplinking protocol on app start-up
   useEffect(() => {
     const initializeDeeplinks = async () => {
       const initialUrl = await Linking.getInitialURL();
@@ -86,9 +88,18 @@ export const PhantomContextProvider: React.FC<Props> = (props) => {
 
   const handleDeepLink = ({ url }: Linking.EventType) => setDeepLink(url);
 
+  const getInfo = useCallback(async () => {
+    if (phantomWalletPublicKey) {
+      const SOL = connection.getAccountInfo(phantomWalletPublicKey);
+      SOL.then((res) => res && setBalance(res?.lamports / LAMPORTS_PER_SOL));
+    }
+  }, []);
+
   useEffect(() => {
     setSubmitting(false);
     if (!deeplink) return;
+
+    getInfo();
 
     const url = new URL(deeplink);
     const params = url.searchParams;
@@ -194,8 +205,9 @@ export const PhantomContextProvider: React.FC<Props> = (props) => {
       disconnect,
       phantomWalletPublicKey,
       session,
+      balance,
     }),
-    [connect, disconnect, phantomWalletPublicKey, session]
+    [connect, disconnect, phantomWalletPublicKey, session, balance]
   );
   return <PhantomContext.Provider value={value} {...props} />;
 };

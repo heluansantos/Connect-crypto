@@ -34,7 +34,7 @@ import {
 import { RootTabScreenProps } from "../../types";
 
 export default function HomeScreen({ navigation }: RootTabScreenProps<"Home">) {
-  const { disconnect } = usePhantom();
+  const { disconnect, balance } = usePhantom();
 
   return (
     <Container>
@@ -61,7 +61,7 @@ export default function HomeScreen({ navigation }: RootTabScreenProps<"Home">) {
 
         <ViewBalanceInfo>
           <SubTitle>Your balance</SubTitle>
-          <BalanceTitle>$ 2.450,56</BalanceTitle>
+          <BalanceTitle>{balance || 0} SOL</BalanceTitle>
         </ViewBalanceInfo>
 
         <ViewBalanceInfo type="row">
